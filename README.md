@@ -8,10 +8,11 @@
 
 | 指标 | 数据来源 | 说明 |
 |------|---------|------|
-| ↓↑ 网络速度 | `getifaddrs` | 显示下载/上传速度，监控 en0-en4 接口 |
-| ◉ 磁盘占用 | `NSURLResourceValues` | 显示根卷已用空间百分比 |
-| ⌥ CPU 温度 | IOKit SMC | 读取 CPU 芯片温度 (°C) |
-| ❋ 风扇转速 | IOKit SMC | 读取风扇平均转速 (RPM) |
+| 向下箭头 下载速度 | `getifaddrs` | 显示实时下载速度，监控 en0-en4 接口 |
+| 向上箭头 上传速度 | `getifaddrs` | 显示实时上传速度，监控 en0-en4 接口 |
+| 硬盘图标 磁盘占用 | `NSURLResourceValues` | 显示根卷已用空间百分比 |
+| 温度计图标 CPU 温度 | IOKit SMC | 读取 CPU 芯片温度 (°C) |
+| 气流图标 风扇转速 | IOKit SMC | 读取风扇平均转速 (RPM) |
 
 数据每秒刷新一次。
 
@@ -87,6 +88,9 @@ open "build/系统状态监视器.app"
 │   └── SMC/
 │       └── SMCKit.swift              # SMC 通信库
 ├── Resources/
+│   ├── AppIcon.icns                  # 应用图标
+│   ├── AppIcon.iconset/              # 图标源尺寸
+│   ├── AppIconPreview.png            # 图标预览
 │   └── Info.plist                    # 应用配置 (LSUIElement=YES)
 ├── build.sh                          # 构建脚本
 └── README.md
