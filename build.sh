@@ -28,21 +28,50 @@ find "$RESOURCES_DIR" -maxdepth 1 -type f -name "*.icns" -exec cp {} "$BUNDLE_DI
 
 # ---- Find sources ----
 SWIFT_FILES=$(find "$SOURCES_DIR" -name "*.swift" | sort)
+SWIFT_FILE_ARGS=()
+while IFS= read -r f; do
+    SWIFT_FILE_ARGS+=("$f")
+done <<< "$SWIFT_FILES"
 echo "源文件:"
 echo "$SWIFT_FILES" | while read f; do echo "  $f"; done
 
 # ---- Compile ----
 echo ""
 echo "[1/3] 编译中..."
-swiftc \
-    -o "$BUNDLE_DIR/Contents/MacOS/$EXECUTABLE_NAME" \
-    -framework AppKit \
-    -framework Foundation \
-    -framework IOKit \
-    $SWIFT_FILES 2>&1
+UNIVERSAL_TMP="$SCRIPT_DIR/build/universal"
+mkdir -p "$UNIVERSAL_TMP"
+
+if swiftc -target x86_64-apple-macos12.0 \
+        -o "$UNIVERSAL_TMP/${EXECUTABLE_NAME}-x86_64" \
+        -framework AppKit \
+        -framework Foundation \
+        -framework IOKit \
+        "${SWIFT_FILE_ARGS[@]}" 2>&1 && \
+   swiftc -target arm64-apple-macos12.0 \
+        -o "$UNIVERSAL_TMP/${EXECUTABLE_NAME}-arm64" \
+        -framework AppKit \
+        -framework Foundation \
+        -framework IOKit \
+        "${SWIFT_FILE_ARGS[@]}" 2>&1 && \
+   lipo -create \
+        "$UNIVERSAL_TMP/${EXECUTABLE_NAME}-x86_64" \
+        "$UNIVERSAL_TMP/${EXECUTABLE_NAME}-arm64" \
+        -output "$BUNDLE_DIR/Contents/MacOS/$EXECUTABLE_NAME"; then
+    echo "  ✓ Universal 2 编译完成"
+else
+    echo "  ! Universal 2 编译失败，退回当前架构编译"
+    swiftc \
+        -o "$BUNDLE_DIR/Contents/MacOS/$EXECUTABLE_NAME" \
+        -framework AppKit \
+        -framework Foundation \
+        -framework IOKit \
+        "${SWIFT_FILE_ARGS[@]}" 2>&1
+fi
+
+rm -rf "$UNIVERSAL_TMP"
 
 chmod +x "$BUNDLE_DIR/Contents/MacOS/$EXECUTABLE_NAME"
-echo "  ✓ 编译完成 ($(du -h "$BUNDLE_DIR/Contents/MacOS/$EXECUTABLE_NAME" | cut -f1))"
+echo "  ✓ 编译完成 ($(du -h "$BUNDLE_DIR/Contents/MacOS/$EXECUTABLE_NAME" | cut -f1), $(file "$BUNDLE_DIR/Contents/MacOS/$EXECUTABLE_NAME" | cut -d: -f2- | xargs))"
 
 # ---- Create DMG ----
 echo ""

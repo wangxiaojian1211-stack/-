@@ -11,19 +11,18 @@
 | 向下箭头 下载速度 | `getifaddrs` | 显示实时下载速度，监控 en0-en4 接口 |
 | 向上箭头 上传速度 | `getifaddrs` | 显示实时上传速度，监控 en0-en4 接口 |
 | 硬盘图标 磁盘占用 | `NSURLResourceValues` | 显示根卷已用空间百分比 |
-| 温度计图标 CPU 温度 | IOKit SMC | 读取 CPU 芯片温度 (°C) |
-| 气流图标 风扇转速 | IOKit SMC | 读取风扇平均转速 (RPM) |
+| 温度计图标 CPU 温度 | IOKit SMC / HID PMU | Intel 通过 SMC、Apple Silicon 通过 PMU/HID 读取 CPU 温度 (°C) |
+| 气流图标 风扇转速 | IOKit SMC | 读取风扇平均转速 (RPM)，无风扇或不可读机型显示 N/A |
 
 数据每秒刷新一次。
 
 ## 系统要求
 
 - macOS 13 (Ventura) 或更高版本
-- Intel 或 Apple Silicon Mac
+- Intel 或 Apple Silicon Mac（M1/M2/M3/M4 等）
 
-> **注意**：CPU 温度和风扇转速通过 IOKit 访问 SMC（系统管理控制器）获取。
-> 在 Apple Silicon Mac 上，SMC 访问可能需要额外的权限。如果显示 "N/A"，
-> 请尝试从终端运行一次应用以观察权限提示。
+> **注意**：Intel Mac 通过 IOKit 访问 SMC（系统管理控制器）获取温度和风扇数据。
+> Apple Silicon Mac 通过 IOKit HID/PMU 读取 CPU 温度；部分无风扇或未开放风扇读数的机型，风扇转速可能显示 "N/A"。
 
 ## 构建
 
@@ -70,7 +69,8 @@ open "build/系统状态监视器.app"
 
 - **语言**：Swift 5.7+
 - **框架**：AppKit、Foundation、IOKit
-- **SMC 通信**：通过 `IOConnectCallStructMethod` 与 AppleSMC 服务交互
+- **SMC 通信**：Intel Mac 通过 `IOConnectCallStructMethod` 与 AppleSMC 服务交互
+- **Apple Silicon 温度**：M 系列 Mac 通过 IOKit HID/PMU 温度传感器读取 CPU die 温度
 - **网络监控**：使用 `getifaddrs()` 读取网络接口字节计数，计算每秒差值
 - **磁盘监控**：使用 `NSURL.resourceValues` 获取卷容量信息
 
@@ -82,6 +82,7 @@ open "build/系统状态监视器.app"
 │   ├── main.swift                    # 应用入口
 │   ├── StatusBarController.swift     # 状态栏管理
 │   ├── Monitors/
+│   │   ├── AppleSiliconSensors.swift # Apple Silicon 温度传感器
 │   │   ├── NetworkMonitor.swift      # 网络速度监控
 │   │   ├── DiskMonitor.swift         # 磁盘使用监控
 │   │   └── SMCMonitor.swift          # SMC 传感器监控
@@ -100,9 +101,10 @@ open "build/系统状态监视器.app"
 
 **Q: CPU 温度/风扇转速显示 "N/A"？**
 
-A: 通常是因为 SMC 访问失败。可能原因：
-- 在 Apple Silicon Mac 上缺少必要权限
-- 系统未加载 AppleSMC 驱动
+A: 通常是因为传感器访问失败。可能原因：
+- Intel Mac 上系统未加载 AppleSMC 驱动
+- Apple Silicon Mac 上当前系统版本未开放对应 HID/PMU 传感器
+- 当前机型无风扇，或系统未开放风扇转速读数
 - 尝试从终端手动运行 `./build/系统状态监视器.app/Contents/MacOS/SystemMonitor` 查看错误日志
 
 **Q: 网络速度不准确？**

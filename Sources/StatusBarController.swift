@@ -173,10 +173,10 @@ class StatusBarController: NSObject, NSApplicationDelegate {
         在状态栏显示:
         • 网络上传/下载速度
         • 磁盘占用百分比
-        • CPU 温度 (通过 SMC)
-        • 风扇转速 (通过 SMC)
+        • CPU 温度 (Intel: SMC / Apple Silicon: HID PMU)
+        • 风扇转速 (通过 SMC，可用时显示)
 
-        基于 IOKit SMC 接口读取硬件传感器数据。
+        基于 IOKit 读取硬件传感器数据。
         """
         alert.alertStyle = .informational
         alert.addButton(withTitle: "确定")

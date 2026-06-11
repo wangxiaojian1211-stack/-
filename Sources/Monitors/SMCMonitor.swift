@@ -1,6 +1,6 @@
 import Foundation
 
-/// Monitors CPU temperature and fan speeds via SMC.
+/// Monitors CPU temperature and fan speeds.
 class SMCMonitor: ObservableObject {
     @Published var cpuTemperature: String = "---"
     @Published var fanSpeed: String = "---"
@@ -8,6 +8,7 @@ class SMCMonitor: ObservableObject {
     @Published var fanSpeedDouble: Double = 0
 
     private var smc: SMCKit?
+    private let appleSiliconSensors = AppleSiliconSensors()
     private var timer: Timer?
 
     func start() {
@@ -31,8 +32,8 @@ class SMCMonitor: ObservableObject {
             return
         }
 
-        // CPU Temperature
-        if let temp = smc.cpuTemperature {
+        // CPU Temperature. Intel uses SMC; Apple Silicon falls back to PMU/HID sensors.
+        if let temp = smc.cpuTemperature ?? appleSiliconSensors.cpuTemperature {
             cpuTempDouble = temp
             cpuTemperature = String(format: "%.0f°C", temp)
         } else {
