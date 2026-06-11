@@ -2,6 +2,10 @@
 
 一个轻量级的 macOS 状态栏应用，实时显示系统运行状态。
 
+## 运行效果
+
+![系统状态监视器运行截图](Resources/Screenshot.png)
+
 ## 功能
 
 在菜单栏显示以下信息：
@@ -92,6 +96,7 @@ open "build/系统状态监视器.app"
 │   ├── AppIcon.icns                  # 应用图标
 │   ├── AppIcon.iconset/              # 图标源尺寸
 │   ├── AppIconPreview.png            # 图标预览
+│   ├── Screenshot.png                # 运行截图
 │   └── Info.plist                    # 应用配置 (LSUIElement=YES)
 ├── build.sh                          # 构建脚本
 └── README.md
