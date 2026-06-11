@@ -1,0 +1,14 @@
+.DS_Store
+
+# Build outputs
+build/
+*.dmg
+
+# Local app bundle leftovers
+1/
+
+# Xcode and Swift local state
+.build/
+DerivedData/
+*.xcuserdata/
+
